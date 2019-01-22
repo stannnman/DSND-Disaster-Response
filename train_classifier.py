@@ -10,12 +10,20 @@ from nltk.stem import WordNetLemmatizer
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import GridSearchCV, ShuffleSplit, train_test_split
+from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.metrics import classification_report
 from sklearn.metrics import precision_score, recall_score, f1_score
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 
+
 def load_data(database_filepath):
+    '''
+    Load data from sqllite database
+
+    Input: database_filepath - path of sqllite database to load
+
+    Output: None
+    '''
     engine = create_engine('sqlite:///'+database_filepath)
     df = pd.read_sql_table('Messages', engine)
     X = df['message']
@@ -25,6 +33,13 @@ def load_data(database_filepath):
 
 
 def tokenize(text):
+    '''
+    Transform text into tokens
+
+    Input: text - line of text to tokenize
+
+    Output: list of tokens
+    '''
     # tokenize text
     tokens = word_tokenize(text)
 
@@ -44,25 +59,42 @@ def tokenize(text):
 
 
 def build_model():
+    '''
+    Build classification pipeline model
+
+    Input: None
+
+    Output: classification nodel
+    '''
     pipeline = Pipeline([
         ('vect', CountVectorizer()),
         ('tfidf', TfidfTransformer()),
         ('clf', MultiOutputClassifier(RandomForestClassifier())),
     ])
     
+    # List of parameters used for permutation in grid search tuning
     parameters = {
         'tfidf__use_idf': [False, True],
         'clf__n_estimators': [50, 100],
         'clf__min_samples_split': [2, 4, 8]
     }
 
-    cv = GridSearchCV(pipeline, param_grid=parameters, n_jobs=-1,\
-                  cv=ShuffleSplit(test_size=0.20, n_splits=1))
+    # Using grid search to find optimal set of parameters
+    cv = GridSearchCV(pipeline, param_grid=parameters, n_jobs=-1)
 
     return pipeline
 
 
 def get_performance(Y_test, Y_pred):
+    '''
+    Get performance metrics for the output of our classification
+
+    Input:
+        Y_test - the actual labels for our test set
+        Y_pred - the predicted labels for our test set
+
+    Output: dataframe with performance metrics for each output label
+    '''
     col_perf = []
 
     for col in Y_test.columns.values:
@@ -80,15 +112,36 @@ def get_performance(Y_test, Y_pred):
     
 
 def evaluate_model(model, X_test, Y_test, category_names):
+    '''
+    Evaluate performance of our classification model
+
+    Input:
+        model - classification model
+        X_test - text input from our test set
+        Y_test - actual labels from our test set
+        category_names - list of output labels (categories)
+
+    Output: None
+    '''
+
     Y_pred = pd.DataFrame(model.predict(X_test), index=Y_test.index.values,\
          columns=category_names)
     
     df_perf = get_performance(Y_test, Y_pred)
-    print(df_perf.mean())
     return
 
 
 def save_model(model, model_filepath):
+    '''
+    Save model to disk so it can be consumed by our web app
+
+    Input:
+        model - classification model
+        model_filepath - path where model is saved
+
+    Output: None
+    '''
+
     pickle.dump(model, open(model_filepath, 'wb'))
     return
 

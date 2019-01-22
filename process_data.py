@@ -5,6 +5,15 @@ from sqlalchemy import create_engine
 
 
 def load_data(messages_filepath, categories_filepath):
+    '''
+    Load data from CSV files
+
+    Input:
+        messages_filepath - path of messages CSV file
+        categories_filepath - path of categories CSV file
+
+    Output: None
+    '''
 
     # Load messages and categories from their respective CSV files
     messages = pd.read_csv(messages_filepath)
@@ -15,6 +24,13 @@ def load_data(messages_filepath, categories_filepath):
 
 
 def clean_data(df):
+    '''
+    Clean and transform data where necessary
+
+    Input: df - dataframe to clean
+
+    Output: cleaned dataframe
+    '''
 
     # create a dataframe of the 36 individual category columns
     categories_split = df['categories'].str.split(pat=';', expand=True)
@@ -43,6 +59,15 @@ def clean_data(df):
 
 
 def save_data(df, database_filename):
+    '''
+    Save the data to a sqllite database
+
+    Input: 
+        df - dataframe to save
+        database_filename - path to save sqllite db
+
+    Output: None
+    '''
     engine = create_engine('sqlite:///'+database_filename)
     df.to_sql('Messages', engine, index=False)
     return  
