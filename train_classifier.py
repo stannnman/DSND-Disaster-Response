@@ -98,6 +98,8 @@ def get_performance(Y_test, Y_pred):
     col_perf = []
 
     for col in Y_test.columns.values:
+        print(classification_report(Y_test[col], Y_pred[col]))
+
         col_accuracy = (Y_test[col] == Y_pred[col]).mean()
         col_precision = precision_score(Y_test[col], Y_pred[col])
         col_recall = recall_score(Y_test[col], Y_pred[col])
@@ -107,6 +109,8 @@ def get_performance(Y_test, Y_pred):
         
     df_perf = pd.DataFrame(col_perf, index=Y_test.columns.values,\
                       columns=['accuracy', 'precision', 'recall', 'f1-score'])
+
+    print(df_perf.mean())
     
     return df_perf
     
