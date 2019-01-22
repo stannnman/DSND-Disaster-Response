@@ -24,3 +24,6 @@ Udacity Data Science Nanodegree Data Engineering Project
 `python run.py`
 
 - Go to http://0.0.0.0:3001/ to load web app in a browser.
+
+### Acknowledgements ###
+Many thanks to Figure Eight for providing the data for this project.
